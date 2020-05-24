@@ -3,7 +3,7 @@ let chatUsers = document.querySelector('#chatUsers');
 let count = document.querySelector('#chatUsersCount');
 let msgForm = document.querySelector('#messageSendForm');
 let msgInput = document.querySelector('#messageInput');
-
+let chatMsg = document.querySelector('#chat-messages');
 
 window.addEventListener('DOMContentLoaded',()=>{
     ws = new WebSocket('ws://localhost:3000/ws');
@@ -16,10 +16,11 @@ window.addEventListener('DOMContentLoaded',()=>{
 msgForm.onsubmit = (e) => {
     e.preventDefault();
     const event = {
-        type: 'message',
+        event: 'message',
         data: msgInput.value,
     }
     ws.send(JSON.stringify(event));
+    console.log(event);
     msgInput.value = '';
 }
 function getQueryParams(){
@@ -56,7 +57,7 @@ function onConnectionOpen(){
 function onMessageReceived(event){
     console.log('received');
     const data = JSON.parse(event.data);
-    // console.log(data);
+    console.log(data);
     switch(data.event){
         case 'users':
             chatUsers.innerHTML = '';
@@ -67,5 +68,14 @@ function onMessageReceived(event){
                 chatUsers.appendChild(userEl);
             })
             count.innerHTML = data.data.length;
+            break;
+        case 'message':
+            const msgElem = document.createElement('div');
+            msgElem.className = `message message-${data.data.sender === 'me' ? 'to' : 'from'}`
+            msgElem.innerHTML = `
+            <h4>${data.data.sender === 'me' ? '' : data.data.name}</h4>
+            <p class="message-text">${data.data.message}</p>`;
+            chatMsg.appendChild(msgElem);
+            break;
     }
 }

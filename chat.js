@@ -8,7 +8,7 @@ import { isWebSocketCloseEvent } from 'http://deno.land/std/ws/mod.ts';
      ws: WebSocket
  } 
  */
-let usersMap = new Map();
+const usersMap = new Map();
 
 /**
  * groupName: [user1,user2,..]
@@ -18,8 +18,17 @@ let usersMap = new Map();
  *  ws: WebSocket
  * } 
  */
-let groups = new Map();
+const groups = new Map();
 
+/**
+ * groupName : [msg1,msg2]
+ * {
+ *  userId,
+ *  name,
+ *  message
+ * }
+ */
+const msg = new Map();
 function getDisplayUsers(group) {
     const users = groups.get(group) || [];
     return users.map(user =>{
@@ -29,7 +38,7 @@ function getDisplayUsers(group) {
         }
     })
 }
-function emitEvent(group) {
+function emitUserList(group) {
     const users = groups.get(group) || [];
     users.forEach((user) => {
             const event = {
@@ -39,6 +48,20 @@ function emitEvent(group) {
             user.ws.send(JSON.stringify(event));
     });
 }
+
+function emitMessage(group,msg,senderId) {
+    const users = groups.get(group) || []; 
+    users.forEach((user) => {
+            msg.sender = user.userId === senderId ? 'me' : senderId;
+            const event = {
+                event: 'message',
+                data: msg,
+            }
+            user.ws.send(JSON.stringify(event));
+    });
+}
+
+let user;
 export default async function chat(ws){
     console.log('connected');
     const userId = v4.generate();
@@ -54,13 +77,13 @@ export default async function chat(ws){
         groups.set(user.group, users);
         usersMap.delete(userId);
         // console.log(users);
-        emitEvent(user.group);
+        emitUserList(user.group);
         break;
        }
        const event = typeof data === 'string'? JSON.parse(data) : data;
         switch(event.event){
             case 'join':
-                const user = {
+                user = {
                     userId,
                     name: event.name,
                     group: event.group,
@@ -70,9 +93,18 @@ export default async function chat(ws){
                 let users = groups.get(event.group) || [];
                 users.push(user);
                 groups.set(event.group,users);
-                emitEvent(event.group);
+                emitUserList(event.group);
                 break;
-            
+            case 'message':
+                console.log(event);
+                user = usersMap.get(userId);
+                const message = {
+                    userId,
+                    name: user.name,
+                    message: event.data,
+                }
+                emitMessage(user.group,message,userId);
+                break;
                 
         }
     }
