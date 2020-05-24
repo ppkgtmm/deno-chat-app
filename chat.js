@@ -32,13 +32,11 @@ function getDisplayUsers(group) {
 function emitEvent(group) {
     const users = groups.get(group) || [];
     users.forEach((user) => {
-        // if(!user.ws.isclosed) {
             const event = {
                 event: 'users',
                 data: getDisplayUsers(group)
             }
             user.ws.send(JSON.stringify(event));
-        // }
     });
 }
 export default async function chat(ws){
@@ -55,7 +53,7 @@ export default async function chat(ws){
         users = users.filter((u) => u.userId!== user.userId);
         groups.set(user.group, users);
         usersMap.delete(userId);
-        console.log(users);
+        // console.log(users);
         emitEvent(user.group);
         break;
        }
@@ -73,6 +71,8 @@ export default async function chat(ws){
                 users.push(user);
                 groups.set(event.group,users);
                 emitEvent(event.group);
+                break;
+            
                 
         }
     }

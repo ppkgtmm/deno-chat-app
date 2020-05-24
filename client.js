@@ -1,4 +1,10 @@
 let ws;
+let chatUsers = document.querySelector('#chatUsers');
+let count = document.querySelector('#chatUsersCount');
+let msgForm = document.querySelector('#messageSendForm');
+let msgInput = document.querySelector('#messageInput');
+
+
 window.addEventListener('DOMContentLoaded',()=>{
     ws = new WebSocket('ws://localhost:3000/ws');
     ws.addEventListener('open',onConnectionOpen);
@@ -6,6 +12,16 @@ window.addEventListener('DOMContentLoaded',()=>{
     // console.log(queryParams);
 
 })
+
+msgForm.onsubmit = (e) => {
+    e.preventDefault();
+    const event = {
+        type: 'message',
+        data: msgInput.value,
+    }
+    ws.send(JSON.stringify(event));
+    msgInput.value = '';
+}
 function getQueryParams(){
     const search = window.location.search.substring(1);
     const pairs = search.split('&');
@@ -40,5 +56,16 @@ function onConnectionOpen(){
 function onMessageReceived(event){
     console.log('received');
     const data = JSON.parse(event.data);
-    console.log(data);
+    // console.log(data);
+    switch(data.event){
+        case 'users':
+            chatUsers.innerHTML = '';
+            data.data.forEach(user =>{
+                const userEl = document.createElement('div');
+                userEl.className = 'chat-user';
+                userEl.innerHTML = user.name
+                chatUsers.appendChild(userEl);
+            })
+            count.innerHTML = data.data.length;
+    }
 }
