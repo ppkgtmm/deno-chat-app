@@ -111,7 +111,7 @@ export default async function chat(ws){
                 emitPreviousMsg(event.group,ws);
                 break;
             case 'message':
-                console.log(event);
+                // console.log(event);
                 user = usersMap.get(userId) || [];
                 const message = {
                     userId,

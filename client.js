@@ -70,7 +70,12 @@ function onMessageReceived(event){
             count.innerHTML = data.data.length;
             break;
         case 'message':
-           appendMsg(data.data);
+            const scrollTop =  chatMsg.scrollTop;
+            const isDown = isAtBottom();
+            appendMsg(data.data);
+            if(isDown){
+                chatMsg.scrollTop = chatMsg.scrollTop +  chatMsg.offsetHeight;
+            }
             break;
         case 'previousMessages':
             data.data.forEach(item => {
@@ -87,4 +92,11 @@ function appendMsg(data){
     <h4>${data.sender === 'me' ? '' : data.name}</h4>
     <p class="message-text">${data.message}</p>`;
     chatMsg.appendChild(msgElem);
+}
+
+function isAtBottom() {
+    if(Math.floor(chatMsg.offsetHeight + chatMsg.scrollTop) === chatMsg.scrollHeight){
+        return true;
+    }
+    return false;
 }
