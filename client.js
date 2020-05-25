@@ -20,7 +20,7 @@ msgForm.onsubmit = (e) => {
         data: msgInput.value,
     }
     ws.send(JSON.stringify(event));
-    console.log(event);
+    console.log("form message",event);
     msgInput.value = '';
 }
 function getQueryParams(){

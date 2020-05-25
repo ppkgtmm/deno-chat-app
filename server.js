@@ -8,7 +8,7 @@ listenAndServe({port: 3000}, async req => {
     // check if websocket request
     if(acceptable(req)){
         acceptWebSocket({
-            connection: req.connection,
+            conn: req.conn,
             bufReader: req.r,
             bufWriter: req.w,
             headers: req.headers,
