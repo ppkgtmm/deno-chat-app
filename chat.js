@@ -57,7 +57,7 @@ function emitMessage(group,msg,senderId) {
         ...msg,
     }
     users.forEach((user) => {
-            tempMessage.sender = user.userId === senderId ? 'me' : senderId
+            tempMessage.sender = user.userId === senderId ? 'me' : user.userId
             const event = {
                 event: 'message',
                 data: tempMessage,
