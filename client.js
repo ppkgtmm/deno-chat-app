@@ -5,17 +5,17 @@ let msgForm = document.querySelector('#messageSendForm');
 let msgInput = document.querySelector('#messageInput');
 let chatMsg = document.querySelector('#chat-messages');
 let groupName = document.querySelector('#groupName');
+let leaveBtn = document.querySelector('#leaveGroupBtn');
 
 window.addEventListener('DOMContentLoaded',()=>{
     ws = new WebSocket('ws://localhost:3000/ws');
     ws.addEventListener('open',onConnectionOpen);
     ws.addEventListener('message',onMessageReceived);
-    // console.log(queryParams);
-
 })
 
 msgForm.onsubmit = (e) => {
     e.preventDefault();
+   if(msgInput.value && msgInput.value.length>0){
     const event = {
         event: 'message',
         data: msgInput.value,
@@ -23,7 +23,13 @@ msgForm.onsubmit = (e) => {
     ws.send(JSON.stringify(event));
     console.log("form message",event);
     msgInput.value = '';
+   }
 }
+
+leaveBtn.onclick = () => {
+    window.location.href = 'chat.html';
+}
+
 function getQueryParams(){
     const search = window.location.search.substring(1);
     const pairs = search.split('&');
@@ -72,7 +78,6 @@ function onMessageReceived(event){
             count.innerHTML = data.data.length;
             break;
         case 'message':
-            const scrollTop =  chatMsg.scrollTop;
             const isDown = isAtBottom();
             appendMsg(data.data);
             if(isDown){
@@ -90,9 +95,8 @@ function onMessageReceived(event){
 function appendMsg(data){
     const msgElem = document.createElement('div');
     msgElem.className = `message message-${data.sender === 'me' ? 'to' : 'from'}`
-    msgElem.innerHTML = `
-    <h4>${data.sender === 'me' ? '' : data.name}</h4>
-    <p class="message-text">${data.message}</p>`;
+    msgElem.innerHTML = ` <h4>${data.sender === 'me' ? '' : data.name}</h4>
+                          <p class="message-text">${data.message}</p>`;
     chatMsg.appendChild(msgElem);
 }
 

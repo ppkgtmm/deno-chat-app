@@ -75,6 +75,17 @@ function emitPreviousMsg(group,ws) {
     ws.send(JSON.stringify(event));
 }
 
+function userLeave(userId){
+    const user = usersMap.get(userId);
+        if(!user){
+            return;
+        }
+    let users = groups.get(user.group) || [];
+    users = users.filter((u) => u.userId!== user.userId);
+    groups.set(user.group, users);
+    usersMap.delete(userId);
+    emitUserList(user.group);
+}
 let user;
 export default async function chat(ws){
     console.log('connected');
@@ -82,16 +93,7 @@ export default async function chat(ws){
     //wait for data
     for await (let data of ws){
        if(isWebSocketCloseEvent(data)){
-        const user = usersMap.get(userId);
-        if(!user){
-            return;
-        }
-        let users = groups.get(user.group) || [];
-        users = users.filter((u) => u.userId!== user.userId);
-        groups.set(user.group, users);
-        usersMap.delete(userId);
-        // console.log(users);
-        emitUserList(user.group);
+        userLeave(userId);
         break;
        }
        const event = typeof data === 'string'? JSON.parse(data) : data;
@@ -111,7 +113,6 @@ export default async function chat(ws){
                 emitPreviousMsg(event.group,ws);
                 break;
             case 'message':
-                // console.log(event);
                 user = usersMap.get(userId) || [];
                 const message = {
                     userId,
@@ -123,7 +124,6 @@ export default async function chat(ws){
                 msg.set(user.group,messages);
                 emitMessage(user.group,message,userId);
                 break;
-                
         }
     }
 }
