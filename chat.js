@@ -53,13 +53,15 @@ function emitUserList(group) {
 
 function emitMessage(group,msg,senderId) {
     const users = groups.get(group) || []; 
+    const tempMessage = {
+        ...msg,
+    }
     users.forEach((user) => {
-            msg.sender = user.userId === senderId ? 'me' : senderId;
+            tempMessage.sender = user.userId === senderId ? 'me' : senderId
             const event = {
                 event: 'message',
-                data: msg,
+                data: tempMessage,
             }
-            // console.log('server event',event);
             user.ws.send(JSON.stringify(event));
     });
 }
@@ -79,8 +81,6 @@ export default async function chat(ws){
     const userId = v4.generate();
     //wait for data
     for await (let data of ws){
-        // console.log(data);
-        console.log(ws.conn);
        if(isWebSocketCloseEvent(data)){
         const user = usersMap.get(userId);
         if(!user){
@@ -98,7 +98,7 @@ export default async function chat(ws){
         switch(event.event){
             case 'join':
                 user = {
-                    userId,
+                    userId: userId,
                     name: event.name,
                     group: event.group,
                     ws,
@@ -112,13 +112,12 @@ export default async function chat(ws){
                 break;
             case 'message':
                 console.log(event);
-                user = usersMap.get(userId);
+                user = usersMap.get(userId) || [];
                 const message = {
                     userId,
                     name: user.name,
                     message: event.data,
                 }
-                // console.log('server',message);
                 const messages = msg.get(user.group) || [];
                 messages.push(message);
                 msg.set(user.group,messages);
