@@ -70,12 +70,21 @@ function onMessageReceived(event){
             count.innerHTML = data.data.length;
             break;
         case 'message':
-            const msgElem = document.createElement('div');
-            msgElem.className = `message message-${data.data.sender === 'me' ? 'to' : 'from'}`
-            msgElem.innerHTML = `
-            <h4>${data.data.sender === 'me' ? '' : data.data.name}</h4>
-            <p class="message-text">${data.data.message}</p>`;
-            chatMsg.appendChild(msgElem);
+           appendMsg(data.data);
+            break;
+        case 'previousMessages':
+            data.data.forEach(item => {
+                appendMsg(item);
+            })
             break;
     }
+}
+
+function appendMsg(data){
+    const msgElem = document.createElement('div');
+    msgElem.className = `message message-${data.sender === 'me' ? 'to' : 'from'}`
+    msgElem.innerHTML = `
+    <h4>${data.sender === 'me' ? '' : data.name}</h4>
+    <p class="message-text">${data.message}</p>`;
+    chatMsg.appendChild(msgElem);
 }

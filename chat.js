@@ -41,11 +41,13 @@ function getDisplayUsers(group) {
 function emitUserList(group) {
     const users = groups.get(group) || [];
     users.forEach((user) => {
-            const event = {
-                event: 'users',
-                data: getDisplayUsers(group)
+            if(user.ws !==){
+                const event = {
+                    event: 'users',
+                    data: getDisplayUsers(group)
+                }
+                user.ws.send(JSON.stringify(event));
             }
-            user.ws.send(JSON.stringify(event));
     });
 }
 
@@ -57,8 +59,18 @@ function emitMessage(group,msg,senderId) {
                 event: 'message',
                 data: msg,
             }
+            console.log('server event',event);
             user.ws.send(JSON.stringify(event));
     });
+}
+
+function emitPreviousMsg(group,ws) {
+    const messages = msg.get(group) || [];
+    const event = {
+        event: 'previousMessages',
+        data : messages,
+    }
+    ws.send(JSON.stringify(event));
 }
 
 let user;
@@ -94,6 +106,7 @@ export default async function chat(ws){
                 users.push(user);
                 groups.set(event.group,users);
                 emitUserList(event.group);
+                emitPreviousMsg(event.group,ws);
                 break;
             case 'message':
                 console.log(event);
@@ -103,6 +116,10 @@ export default async function chat(ws){
                     name: user.name,
                     message: event.data,
                 }
+                console.log('server',message);
+                const messages = msg.get(user.group) || [];
+                messages.push(message);
+                msg.set(user.group,messages);
                 emitMessage(user.group,message,userId);
                 break;
                 
