@@ -4,6 +4,7 @@ let count = document.querySelector('#chatUsersCount');
 let msgForm = document.querySelector('#messageSendForm');
 let msgInput = document.querySelector('#messageInput');
 let chatMsg = document.querySelector('#chat-messages');
+let groupName = document.querySelector('#groupName');
 
 window.addEventListener('DOMContentLoaded',()=>{
     ws = new WebSocket('ws://localhost:3000/ws');
@@ -39,6 +40,7 @@ function onConnectionOpen(){
     const queryParams = getQueryParams();
     if(queryParams.name && queryParams.group)
     {
+        groupName.innerText = queryParams.group;
         const event = {
             event: 'join',
             group: queryParams.group,
